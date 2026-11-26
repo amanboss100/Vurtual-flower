@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glowing 3D Flower</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        .flower-container {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate 10s linear infinite;
+        }
+        .petal {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #ff007f, #7b00ff);
+            border-radius: 50% 50% 0 50%;
+            top: 50%;
+            left: 50%;
+            transform-origin: bottom right;
+            box-shadow: 0 0 20px #ff007f;
+            opacity: 0.8;
+        }
+        .p1 { transform: rotate(0deg) skew(20deg); }
+        .p2 { transform: rotate(72deg) skew(20deg); }
+        .p3 { transform: rotate(144deg) skew(20deg); }
+        .p4 { transform: rotate(216deg) skew(20deg); }
+        .p5 { transform: rotate(288deg) skew(20deg); }
+        
+        .core {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ffff00, #ff8c00);
+            border-radius: 50%;
+            top: 70px;
+            left: 70px;
+            box-shadow: 0 0 30px #ffff00;
+        }
+
+        @keyframes rotate {
+            from { transform: perspective(500px) rotateY(0deg) rotateX(0deg); }
+            to { transform: perspective(500px) rotateY(360deg) rotateX(360deg); }
+        }
+
+        .text {
+            margin-top: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #7b00ff, 0 0 20px #ff007f;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="flower-container">
+        <div class="petal p1"></div>
+        <div class="petal p2"></div>
+        <div class="petal p3"></div>
+        <div class="petal p4"></div>
+        <div class="petal p5"></div>
+        <div class="core"></div>
+    </div>
+
+    <div class="text">Made by Aman</div>
+
+</body>
+</html>
