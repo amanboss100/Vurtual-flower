@@ -1,84 +1,472 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glowing 3D Flower</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            background: #050505;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-        .flower-container {
-            width: 200px;
-            height: 200px;
-            position: relative;
-            transform-style: preserve-3d;
-            animation: rotate 10s linear infinite;
-        }
-        .petal {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, #ff007f, #7b00ff);
-            border-radius: 50% 50% 0 50%;
-            top: 50%;
-            left: 50%;
-            transform-origin: bottom right;
-            box-shadow: 0 0 20px #ff007f;
-            opacity: 0.8;
-        }
-        .p1 { transform: rotate(0deg) skew(20deg); }
-        .p2 { transform: rotate(72deg) skew(20deg); }
-        .p3 { transform: rotate(144deg) skew(20deg); }
-        .p4 { transform: rotate(216deg) skew(20deg); }
-        .p5 { transform: rotate(288deg) skew(20deg); }
-        
-        .core {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, #ffff00, #ff8c00);
-            border-radius: 50%;
-            top: 70px;
-            left: 70px;
-            box-shadow: 0 0 30px #ffff00;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flower</title>
 
-        @keyframes rotate {
-            from { transform: perspective(500px) rotateY(0deg) rotateX(0deg); }
-            to { transform: perspective(500px) rotateY(360deg) rotateX(360deg); }
-        }
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        .text {
-            margin-top: 50px;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #7b00ff, 0 0 20px #ff007f;
-            letter-spacing: 2px;
-        }
-    </style>
+body {
+    background: #020304;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}
+
+.top {
+    position: fixed;
+    top: 25px;
+    width: 100%;
+    text-align: center;
+    color: #777;
+    font-size: 10px;
+    letter-spacing: 4px;
+    pointer-events: none;
+}
+
+.bottom {
+    position: fixed;
+    bottom: 35px;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+}
+
+.bottom h1 {
+    color: #ff315f;
+    font-size: clamp(20px, 5vw, 36px);
+    font-weight: 300;
+    letter-spacing: 7px;
+    text-shadow: 0 0 12px #ff174f, 0 0 30px #ff174f;
+}
+
+.bottom p {
+    color: #999;
+    font-size: 9px;
+    letter-spacing: 4px;
+    margin-top: 12px;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="flower-container">
-        <div class="petal p1"></div>
-        <div class="petal p2"></div>
-        <div class="petal p3"></div>
-        <div class="petal p4"></div>
-        <div class="petal p5"></div>
-        <div class="core"></div>
-    </div>
+<div class="top">ONLY FOR YOU </div>
 
-    <div class="text">Made by Aman</div>
+<canvas id="rose"></canvas>
 
+<div class="bottom">
+    <h1>I LOVE YOU 💞</h1>
+    <p>You Are Queen of my Heart</p></p>
+</div>
+
+<script>
+
+const canvas = document.getElementById("rose");
+const ctx = canvas.getContext("2d");
+
+let W, H, DPR;
+let particles = [];
+let stars = [];
+let time = 0;
+
+let mouse = {
+    x: 0,
+    y: 0,
+    active: false
+};
+
+let smoothMouse = {
+    x: 0,
+    y: 0
+};
+
+// SCREEN SETUP
+function resize() {
+
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    createRose();
+    createStars();
+}
+
+window.addEventListener("resize", resize);
+
+// RANDOM
+function random(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// PARTICLE
+function addParticle(x, y, z, color, size) {
+
+    particles.push({
+        x,
+        y,
+        z,
+        color,
+        size,
+        phase: random(0, 6.28),
+        speed: random(0.5, 2)
+    });
+}
+
+// ROSE PETAL GENERATOR
+function createPetal(angle, radius, length, width, color) {
+
+    const count = 850;
+
+    for (let i = 0; i < count; i++) {
+
+        let u = random(0, 1);
+        let v = random(-1, 1);
+
+        let spread = Math.sin(Math.PI * u);
+
+        let w = width * spread;
+
+        let x = Math.cos(angle) * (radius + length * u)
+              - Math.sin(angle) * v * w;
+
+        let y = Math.sin(angle) * (radius + length * u)
+              + Math.cos(angle) * v * w;
+
+        let z = 22 * spread
+              + 16 * (1 - v * v)
+              - 24 * u * u;
+
+        x += random(-2, 2);
+        y += random(-2, 2);
+        z += random(-7, 7);
+
+        let red = random(190, 255);
+        let green = random(5, 40);
+        let blue = random(25, 85);
+
+        addParticle(
+            x,
+            y,
+            z,
+            `rgb(${red},${green},${blue})`,
+            random(0.6, 1.8)
+        );
+    }
+}
+
+// LEAF GENERATOR
+function createLeaf(angle, centerY, length, width) {
+
+    for (let i = 0; i < 1000; i++) {
+
+        let u = random(0, 1);
+        let v = random(-1, 1);
+
+        let w = width * Math.sin(Math.PI * u);
+
+        let x = length * u;
+        let y = v * w;
+
+        let rx = x * Math.cos(angle) - y * Math.sin(angle);
+        let ry = x * Math.sin(angle) + y * Math.cos(angle);
+
+        let z = 15 * Math.sin(Math.PI * u) * (1 - v * v);
+
+        addParticle(
+            rx,
+            centerY + ry,
+            z,
+            `rgb(${random(20,60)},255,${random(40,100)})`,
+            random(0.7, 1.8)
+        );
+    }
+
+    // Leaf central vein
+    for (let i = 0; i < 150; i++) {
+
+        let u = random(0, 1);
+
+        let x = length * u;
+
+        addParticle(
+            x * Math.cos(angle),
+            centerY + x * Math.sin(angle),
+            16,
+            "#9aff72",
+            1
+        );
+    }
+}
+
+// CREATE COMPLETE ROSE
+function createRose() {
+
+    particles = [];
+
+    // OUTER PETALS
+    for (let i = 0; i < 10; i++) {
+
+        createPetal(
+            i * Math.PI * 2 / 10,
+            12,
+            115,
+            52
+        );
+    }
+
+    // MIDDLE PETALS
+    for (let i = 0; i < 10; i++) {
+
+        createPetal(
+            i * Math.PI * 2 / 10 + 0.3,
+            5,
+            85,
+            40
+        );
+    }
+
+    // INNER PETALS
+    for (let i = 0; i < 8; i++) {
+
+        createPetal(
+            i * Math.PI * 2 / 8,
+            0,
+            55,
+            27
+        );
+    }
+
+    // ROSE CENTER SPIRAL
+    for (let i = 0; i < 1800; i++) {
+
+        let a = i * 0.08;
+        let r = 2 + i / 1800 * 28;
+
+        addParticle(
+            Math.cos(a) * r,
+            Math.sin(a) * r * 0.65,
+            random(-5, 25),
+            "#ff315e",
+            random(0.7, 1.8)
+        );
+    }
+
+    // STEM
+    for (let i = 0; i < 2600; i++) {
+
+        let t = random(0, 1);
+
+        let y = 115 + t * 300;
+
+        let x = Math.sin(t * 2.5) * 5;
+
+        x += random(-4, 4);
+
+        addParticle(
+            x,
+            y,
+            random(-6, 6),
+            `rgb(${random(30,80)},255,${random(40,90)})`,
+            random(0.7, 1.7)
+        );
+    }
+
+    // LEAVES
+    createLeaf(-0.55, 230, 110, 53);
+    createLeaf(0.65, 275, 115, 55);
+    createLeaf(-0.75, 345, 90, 45);
+    createLeaf(2.3, 175, 75, 38);
+
+    // SEPALS UNDER FLOWER
+    for (let i = 0; i < 5; i++) {
+
+        let a = i * Math.PI * 2 / 5;
+
+        for (let j = 0; j < 180; j++) {
+
+            let t = random(0, 1);
+
+            addParticle(
+                Math.cos(a) * t * 65,
+                90 + Math.sin(a) * t * 20,
+                Math.sin(a) * 15,
+                "#55ff65",
+                1
+            );
+        }
+    }
+}
+
+// BACKGROUND STARS
+function createStars() {
+
+    stars = [];
+
+    for (let i = 0; i < 130; i++) {
+
+        stars.push({
+            x: random(0, W),
+            y: random(0, H),
+            size: random(0.3, 1.6),
+            alpha: random(0.1, 0.8),
+            speed: random(0.01, 0.04)
+        });
+    }
+}
+
+// INTERACTION
+function moveMouse(e) {
+
+    mouse.x = e.clientX - W / 2;
+    mouse.y = e.clientY - H / 2;
+    mouse.active = true;
+}
+
+canvas.addEventListener("pointermove", moveMouse);
+
+canvas.addEventListener("pointerleave", () => {
+    mouse.active = false;
+});
+
+// 3D PROJECTION
+function project(x, y, z, rotation) {
+
+    let rx = x * Math.cos(rotation) - z * Math.sin(rotation);
+    let rz = x * Math.sin(rotation) + z * Math.cos(rotation);
+
+    let scale = Math.min(W / 700, H / 850) * 0.85;
+
+    let perspective = 750 / (750 + rz);
+
+    return {
+        x: W / 2 + rx * scale * perspective,
+        y: H * 0.43 + y * scale * perspective,
+        scale: scale * perspective
+    };
+}
+
+// DRAW PARTICLES
+function drawParticles() {
+
+    smoothMouse.x += (mouse.active ? mouse.x : 0 - smoothMouse.x) * 0.03;
+    smoothMouse.y += (mouse.active ? mouse.y : 0 - smoothMouse.y) * 0.03;
+
+    let rotation = Math.sin(time * 0.25) * 0.12;
+
+    let sorted = particles.map(p => {
+
+        return {
+            p,
+            point: project(p.x, p.y, p.z, rotation)
+        };
+
+    }).sort((a, b) => a.p.z - b.p.z);
+
+    for (let item of sorted) {
+
+        let p = item.p;
+        let point = item.point;
+
+        let twinkle = 0.55 +
+            Math.sin(time * p.speed + p.phase) * 0.35;
+
+        let px = point.x;
+        let py = point.y;
+
+        // Gentle mouse interaction
+        if (mouse.active) {
+
+            let dx = mouse.x * 0.025;
+            let dy = mouse.y * 0.025;
+
+            px += dx * point.scale;
+            py += dy * point.scale;
+        }
+
+        let size = Math.max(0.3, p.size * point.scale);
+
+        ctx.globalAlpha = Math.max(0.15, twinkle);
+
+        ctx.fillStyle = p.color;
+
+        ctx.shadowBlur = size * 7;
+        ctx.shadowColor = p.color;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            px,
+            py,
+            size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+}
+
+// DRAW BACKGROUND
+function drawBackground() {
+
+    ctx.fillStyle = "#020304";
+    ctx.fillRect(0, 0, W, H);
+
+    for (let s of stars) {
+
+        s.alpha += Math.sin(time * s.speed) * 0.002;
+
+        ctx.globalAlpha = Math.max(0.1, Math.min(1, s.alpha));
+
+        ctx.fillStyle = "#ffffff";
+
+        ctx.beginPath();
+
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+}
+
+// ANIMATION LOOP
+function animate() {
+
+    requestAnimationFrame(animate);
+
+    time += 0.016;
+
+    drawBackground();
+
+    drawParticles();
+}
+
+resize();
+animate();
+
+</script>
 </body>
 </html>
